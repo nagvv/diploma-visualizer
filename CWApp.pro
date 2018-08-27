@@ -27,13 +27,16 @@ SOURCES += \
         mainwindow.cpp \
     findfiles.cpp \
     visualizer.cpp \
-    common.cpp
+    common.cpp \
+    painter.cpp
 
 HEADERS += \
         mainwindow.h \
     findfiles.h \
     visualizer.h \
-    common.h
+    common.h \
+    painter.h \
+    data.h
 
 FORMS += \
         mainwindow.ui \
