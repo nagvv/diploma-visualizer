@@ -141,7 +141,29 @@ void MainWindow::pFinished(int exitCode, QProcess::ExitStatus exitStatus)
 
 void MainWindow::pErrorOccured(QProcess::ProcessError error)
 {
-    ui->runStatusLabel->setText(QString("errorOccured: %1").arg(error));
+    QString t = QString("errorOccured: %1: ").arg(error);
+    switch(error)
+    {
+    case 0:
+        t+="The process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program.";
+        break;
+    case 1:
+        t+="The process crashed some time after starting successfully.";
+        break;
+    case 2:
+        t+="The last waitFor...() function timed out. The state of QProcess is unchanged, and you can try calling waitFor...() again.";
+        break;
+    case 3:
+        t+="An error occurred when attempting to read from the process. For example, the process may not be running.";
+        break;
+    case 4:
+        t+="An error occurred when attempting to write to the process. For example, the process may not be running, or it may have closed its input channel.";
+        break;
+    case 5:
+        t+="An unknown error occurred. ";
+        break;
+    }
+    ui->runStatusLabel->setText(t);
     //log("mainWindow: approved");
     ui->startButton->setEnabled(true);
     ui->stopButton->setEnabled(false);

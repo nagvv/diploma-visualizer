@@ -37,6 +37,7 @@ void Common::runExec(QWidget *parent, bool isMPI, int pnum)
 {
     process = new QProcess(parent);
     QString file = execFilePath;
+    QStringList arguments("");
     connect(process, SIGNAL(started()), this, SLOT(pStarted()));
     connect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(pStateChanged(QProcess::ProcessState)));
     connect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(pFinished(int, QProcess::ExitStatus)));
@@ -48,14 +49,15 @@ void Common::runExec(QWidget *parent, bool isMPI, int pnum)
     connect(this, SIGNAL(pErrorOccuredSignal(QProcess::ProcessError)), parent, SLOT(pErrorOccured(QProcess::ProcessError)));
     if(isMPI)
     {
-        QString rs = QString("mpiexec -n %1 ").arg(pnum) + file;
+        QString rs = QString("mpiexec -n %1 ").arg(pnum) + "\"" + file + "\"";
         log(QString("common: running ") + rs);
-        process->start(rs);
+        process->start(rs, arguments);
+
     }
     else
     {
         log(QString("common: running ") + file);
-        process->start(file);
+        process->start("\"" + file + "\"");
     }
 }
 
