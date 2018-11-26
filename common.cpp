@@ -2,6 +2,7 @@
 
 Common::Common(QObject *parent) : QObject(parent)
 {
+    pRunning = false;
     execFilePath = "";
     configFilePath= "";
     QFile stdoutFile;
@@ -37,7 +38,7 @@ void Common::runExec(QWidget *parent, bool isMPI, int pnum)
 {
     process = new QProcess(parent);
     QString file = execFilePath;
-    QStringList arguments("");
+    QStringList arguments(configFilePath);
     connect(process, SIGNAL(started()), this, SLOT(pStarted()));
     connect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(pStateChanged(QProcess::ProcessState)));
     connect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(pFinished(int, QProcess::ExitStatus)));
@@ -99,6 +100,7 @@ void Common::clearVises()
 
 void Common::pStarted()
 {
+    pRunning = true;;
     log("process: started");
     emit pStartedSignal();
 }
@@ -111,6 +113,7 @@ void Common::pStateChanged(QProcess::ProcessState pState)
 
 void Common::pFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    pRunning = false;
     pFather = nullptr;
     log(QString("process: finished with exitCode: %1, and exitStatus: %2").arg(exitCode).arg(exitStatus));
     emit pFinishedSignal(exitCode, exitStatus);

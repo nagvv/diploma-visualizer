@@ -28,7 +28,8 @@ SOURCES += \
     findfiles.cpp \
     visualizer.cpp \
     common.cpp \
-    painter.cpp
+    painter.cpp \
+    logloader.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -36,7 +37,7 @@ HEADERS += \
     visualizer.h \
     common.h \
     painter.h \
-    data.h
+    logloader.h
 
 FORMS += \
         mainwindow.ui \

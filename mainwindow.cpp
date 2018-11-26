@@ -9,6 +9,24 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    if(QFileInfo("config.ini").exists())
+    {
+        log("config.ini found");
+        common.setConfigPath("config.ini");
+    }
+#ifdef Q_OS_LINUX
+    if(QFileInfo("exec").exists())
+    {
+        log("exec found");
+        common.setExecPath("exec");
+    }
+#elif defined(Q_OS_WIN)
+    if(QFileInfo("exec.exe").exists())
+    {
+        log("exec.exe found");
+        common.setExecPath("exec.exe");
+    }
+#endif
     update();
 }
 

@@ -18,6 +18,7 @@ private:
     int next_id;
     QProcess *process;
     MainWindow *pFather;
+    bool pRunning;
 
 public:
     explicit Common(QObject *parent = nullptr);
@@ -32,6 +33,8 @@ public:
     void setConfigPath(const QString &s);
     QString getExecPath();
     QString getConfigPath();
+
+    inline bool isRunning() { return pRunning; }
 signals:
     void pStartedSignal();
     void pStateChangedSignal(QProcess::ProcessState);
