@@ -163,8 +163,8 @@ void Visualizer::on_restartButton_clicked()
 
 void Visualizer::on_chooseBox_currentIndexChanged(const QString &file)
 {
-    log("Visualizer: selected file: " + file);
-    ll.read(ui->chooseBox->currentText());
+    log("Visualizer: selected file: " + dir.path() + '/' + file);
+    ll.read(dir.path() + '/' + file);
     if(ll.isOkay())
         log("visualizer: logloader is okay");
     frame = 0;

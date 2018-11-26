@@ -6,9 +6,9 @@ LogLoader::LogLoader() : botNum(0), frameNum(0)
 {
     connect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)));
 
-    QFile file("obs1.txt");
-    okay = file.open(QIODevice::ReadOnly | QIODevice::Text);
-    if(okay)
+    QFile file("obs1.txt");//TODO: do this
+    bool tokay = file.open(QIODevice::ReadOnly | QIODevice::Text);
+    if(tokay)
     {
         QTextStream in(&file);
 
