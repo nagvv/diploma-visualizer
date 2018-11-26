@@ -66,6 +66,11 @@ private slots:
 
     void on_restartButton_clicked();
     void on_chooseBox_currentIndexChanged(const QString &file);
+
+    void on_chooseButton_clicked();
+    void on_shCenterCheckBox_stateChanged(int set);
+    void on_shLookAtCheckBox_stateChanged(int set);
+    void on_shBestPosCheckBox_stateChanged(int set);
 };
 
 #endif // VISUALIZER_H

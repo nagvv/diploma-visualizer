@@ -2,6 +2,7 @@
 #include "ui_visualizer.h"
 #include "common.h"
 #include <cmath>
+#include <QFileDialog>
 #include <QFileInfo>
 
 Visualizer::Visualizer(int t_id, QWidget *parent) : QWidget(parent, Qt::Window), ui(new Ui::Visualizer),
@@ -167,4 +168,32 @@ void Visualizer::on_chooseBox_currentIndexChanged(const QString &file)
     if(ll.isOkay())
         log("visualizer: logloader is okay");
     frame = 0;
+}
+
+void Visualizer::on_chooseButton_clicked()
+{
+    QString s = QFileDialog::getExistingDirectory(this, "Choose Directory", dir.path());
+    if(!s.isEmpty())
+        dir = QDir(s);
+
+    QStringList fileList = dir.entryList(QStringList("log_*_*"), QDir::Files);
+    ui->chooseBox->clear();
+    ui->chooseBox->addItems(fileList);
+    if(ui->chooseBox->count() > 0)
+        ui->chooseBox->setCurrentIndex(0);
+}
+
+void Visualizer::on_shCenterCheckBox_stateChanged(int set)
+{
+    ui->painter->setShowCenter(set);
+}
+
+void Visualizer::on_shLookAtCheckBox_stateChanged(int set)
+{
+    ui->painter->setShowLookAt(set);
+}
+
+void Visualizer::on_shBestPosCheckBox_stateChanged(int set)
+{
+    ui->painter->setShowBestPos(set);
 }

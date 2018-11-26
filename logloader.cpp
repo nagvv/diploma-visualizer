@@ -108,8 +108,8 @@ void LogLoader::read(QString path)
             b.v = line[5].toFloat();
             b.bX = line[6].toFloat();
             b.bY = line[7].toFloat();
-            b.clX = line[8].toFloat();
-            b.clY = line[9].toFloat();
+            b.laX = line[8].toFloat();
+            b.laY = line[9].toFloat();
             b.alive = true;
             data[frameNum].push_back(b);
             bi++;

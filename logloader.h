@@ -16,7 +16,7 @@ struct bot
             dirX, dirY, //direction
             radius, v,  //radius and best value
             bX, bY,     //best val position
-            clX, clY;   //looking at point
+            laX, laY;   //looking at point
 };
 
 class LogLoader: public QObject

@@ -10,6 +10,8 @@ Painter::Painter(QWidget *parent) : QWidget(parent)
     viewHeight = 100.f;
     viewX = 0.f;
     viewY = 0.f;
+    showCenter = true;
+    showLookAt = false;
 }
 
 void Painter::paint(const vector<bot> &bots)
@@ -49,7 +51,7 @@ void Painter::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
     QPainter painter(this); // Создаём объект отрисовщика
     // Устанавливаем кисть абриса
-    painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
+    painter.setPen(Qt::black);
 
     float size = this->height() / viewHeight;
     float viewWidth = viewHeight * this->width() / this->height();
@@ -60,10 +62,27 @@ void Painter::paintEvent(QPaintEvent *event)
         float px = (b.posX - viewX + viewWidth/2)*size;
         float py = (b.posY - viewY + viewHeight/2)*size;
         float sz = 2*b.radius * size;
-        painter.drawEllipse(px, py, sz, sz);
+        painter.drawEllipse(px - sz/2, py - sz/2, sz, sz);
         float dx = b.dirX * size;
         float dy = b.dirY * size;
-        painter.drawLine(px + sz/2, py + sz/2, px + sz/2 + dx, py + sz/2 + dy);
+        painter.drawLine(px, py, px + dx, py + dy);
+        //draw look at points
+        if(showLookAt)
+        {
+            float lax = b.laX * size;
+            float lay = b.laY * size;
+            painter.setPen(QColor::fromRgb(0, 200, 0));
+            painter.drawLine(px, py, px + lax, py + lay);
+            painter.setPen(Qt::black);
+        }
+        if(showBestPos)
+        {
+            float bx = b.bX * size;
+            float by = b.bY * size;
+            painter.setPen(QColor::fromRgb(200, 0, 0));
+            painter.drawLine(px, py, px + bx, py + by);
+            painter.setPen(Qt::black);
+        }
     }
 
     //draw walls
@@ -74,14 +93,16 @@ void Painter::paintEvent(QPaintEvent *event)
         painter.drawLine(trw);
     }
 
-    //draw center mark
-    int ls = 10;
-    QLine l1(-ls, 0, ls, 0), l2(0, -ls, 0, ls);
-    QPoint trp( this->width()/2 - viewX*size, this->height()/2 - viewY*size );
+    if(showCenter)//draw center mark
+    {
+        int ls = 10;
+        QLine l1(-ls, 0, ls, 0), l2(0, -ls, 0, ls);
+        QPoint trp( this->width()/2 - viewX*size, this->height()/2 - viewY*size );
 
-    l1.translate( trp );
-    l2.translate( trp );
+        l1.translate( trp );
+        l2.translate( trp );
 
-    painter.drawLine(l1);
-    painter.drawLine(l2);
+        painter.drawLine(l1);
+        painter.drawLine(l2);
+    }
 }

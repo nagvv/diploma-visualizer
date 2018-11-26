@@ -15,6 +15,10 @@ private:
     vector<QLine> walls;
     float viewHeight;
     float viewX, viewY;
+
+    bool showCenter;
+    bool showLookAt;
+    bool showBestPos;
 protected:
     void paintEvent(QPaintEvent *event);
 
@@ -31,6 +35,10 @@ public:
     inline float getViewHeight() { return viewHeight; }
     inline float getViewX() { return viewX; }
     inline float getViewY() { return viewY; }
+
+    inline void setShowCenter(bool sh) { showCenter = sh; }
+    inline void setShowLookAt(bool sh) { showLookAt = sh; }
+    inline void setShowBestPos(bool sh) { showBestPos = sh; }
 
     void setWalls(const vector<QLine>&);
 signals:
