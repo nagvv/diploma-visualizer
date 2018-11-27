@@ -7,16 +7,17 @@
 
 Painter::Painter(QWidget *parent) : QWidget(parent)
 {
-    viewHeight = 100.f;
+    viewHeight = 150.f;
     viewX = 0.f;
     viewY = 0.f;
     showCenter = true;
     showLookAt = false;
+    showBestPos = false;
 }
 
-void Painter::paint(const vector<bot> &bots)
+void Painter::paint(shared_ptr<vector<bot>> bots)
 {
-    this->bots = bots;//uneffective!
+    this->bots = bots;
 }
 
 void Painter::setViewPos(float x, float y)
@@ -57,33 +58,34 @@ void Painter::paintEvent(QPaintEvent *event)
     float viewWidth = viewHeight * this->width() / this->height();
 
     //draw them!
-    for(auto &b: bots)
-    {
-        float px = (b.posX - viewX + viewWidth/2)*size;
-        float py = (b.posY - viewY + viewHeight/2)*size;
-        float sz = 2*b.radius * size;
-        painter.drawEllipse(px - sz/2, py - sz/2, sz, sz);
-        float dx = b.dirX * size;
-        float dy = b.dirY * size;
-        painter.drawLine(px, py, px + dx, py + dy);
-        //draw look at points
-        if(showLookAt)
+    if(bots)
+        for(auto &b: *bots)
         {
-            float lax = b.laX * size;
-            float lay = b.laY * size;
-            painter.setPen(QColor::fromRgb(0, 200, 0));
-            painter.drawLine(px, py, px + lax, py + lay);
-            painter.setPen(Qt::black);
+            float px = (b.posX - viewX + viewWidth/2)*size;
+            float py = (b.posY - viewY + viewHeight/2)*size;
+            float sz = 2*b.radius * size;
+            painter.drawEllipse(px - sz/2, py - sz/2, sz, sz);
+            float dx = b.dirX * size;
+            float dy = b.dirY * size;
+            painter.drawLine(px, py, px + dx, py + dy);
+            //draw look at points
+            if(showLookAt)
+            {
+                float lax = b.laX * size;
+                float lay = b.laY * size;
+                painter.setPen(QColor::fromRgb(0, 200, 0));
+                painter.drawLine(px, py, px + lax, py + lay);
+                painter.setPen(Qt::black);
+            }
+            if(showBestPos)
+            {
+                float bx = b.bX * size;
+                float by = b.bY * size;
+                painter.setPen(QColor::fromRgb(200, 0, 0));
+                painter.drawLine(px, py, px + bx, py + by);
+                painter.setPen(Qt::black);
+            }
         }
-        if(showBestPos)
-        {
-            float bx = b.bX * size;
-            float by = b.bY * size;
-            painter.setPen(QColor::fromRgb(200, 0, 0));
-            painter.drawLine(px, py, px + bx, py + by);
-            painter.setPen(Qt::black);
-        }
-    }
 
     //draw walls
     for(auto &w: walls)

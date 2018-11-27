@@ -5,11 +5,102 @@
 LogLoader::LogLoader() : botNum(0), frameNum(0)
 {
     connect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)));
+}
 
-    QFile file("obs1.txt");//TODO: do this
+LogLoader::LogLoader(QString path)
+{
+    connect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)));
+    read(path);
+}
+
+LogLoader::~LogLoader()
+{
+    disconnect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)));
+}
+
+void LogLoader::read(QString path)
+{
+    file = std::unique_ptr<QFile>(new QFile(path));
+    log("LogLoader: opening " + path);
+    okay = file->open(QIODevice::ReadOnly | QIODevice::Text);
+    if(okay)
+    {
+        log("LogLoader: successfully opened");
+        QTextStream in(file.get());
+        botNum=0;
+        frameNum=0;
+        size_t bi = 0;
+        data.clear();
+        data.emplace_back(make_shared<vector<bot>>());
+        while(!in.atEnd())
+        {
+            QStringList line = in.readLine().split(' ');
+            if(line.size() == 1)
+            {
+                line = in.readLine().split(' ');
+                if(line.size() == 1)
+                {
+                    if(botNum==0)
+                    {
+                        botNum=bi;
+                        bi=0;
+                    }
+                    frameNum++;
+                    data.emplace_back(make_shared<vector<bot>>());
+                    continue;
+                }
+                else
+                {
+                    //okay = false;
+                    //log("LogLoader: bad file _0");
+                    break;
+                }
+            }
+            else if(line.size() != 10)
+            {
+                //okay = false;
+                //log("LogLoader: bad file _1, line size = " + QString::number(line.size()));
+                break;
+            }
+
+            bot b;
+            b.posX = line[0].toFloat();
+            b.posY = line[1].toFloat();
+            b.dirX = line[2].toFloat();
+            b.dirY = line[3].toFloat();
+            b.radius = line[4].toFloat();
+            b.v = line[5].toFloat();
+            b.bX = line[6].toFloat();
+            b.bY = line[7].toFloat();
+            b.laX = line[8].toFloat();
+            b.laY = line[9].toFloat();
+            b.alive = true;
+            (*data[frameNum]).push_back(b);
+            bi++;
+        }
+        data.pop_back();
+        frameNum = data.size();
+        log("LogLoader: readed " + QString::number(frameNum) + " frames with " + QString::number(botNum) + " bots each.");
+    }
+    else
+    {
+        botNum=0;
+        frameNum=0;
+        log("LogLoader: couldn't open");
+    }
+    file.reset();
+    if(!watcher.files().empty())
+     watcher.removePaths(watcher.files());
+    watcher.addPath(path);
+}
+
+void LogLoader::readObs(QString path)
+{
+    QFile file(path);//TODO: do this
     bool tokay = file.open(QIODevice::ReadOnly | QIODevice::Text);
     if(tokay)
     {
+        walls.clear();
         QTextStream in(&file);
 
         while(!in.atEnd())
@@ -41,93 +132,6 @@ LogLoader::LogLoader() : botNum(0), frameNum(0)
         log("LogLoader: couldn't load obstacles file");
     file.close();
     //skipped process_obstacles(not needed)
-}
-
-LogLoader::LogLoader(QString path)
-{
-    connect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)));
-    read(path);
-}
-
-LogLoader::~LogLoader()
-{
-    disconnect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)));
-}
-
-void LogLoader::read(QString path)
-{
-    file = std::unique_ptr<QFile>(new QFile(path));
-    log("LogLoader: opening " + path);
-    okay = file->open(QIODevice::ReadOnly | QIODevice::Text);
-    if(okay)
-    {
-        log("LogLoader: successfully opened");
-        QTextStream in(file.get());
-        botNum=0;
-        frameNum=0;
-        size_t bi = 0;
-        data.clear();
-        data.emplace_back();
-        while(!in.atEnd())
-        {
-            QStringList line = in.readLine().split(' ');
-            if(line.size() == 1)
-            {
-                line = in.readLine().split(' ');
-                if(line.size() == 1)
-                {
-                    if(botNum==0)
-                    {
-                        botNum=bi;
-                        bi=0;
-                    }
-                    frameNum++;
-                    data.emplace_back();
-                    continue;
-                }
-                else
-                {
-                    okay = false;
-                    log("LogLoader: bad file _0");
-                    break;
-                }
-            }
-            else if(line.size() != 10)
-            {
-                okay = false;
-                log("LogLoader: bad file _1, line size = " + QString::number(line.size()));
-                break;
-            }
-
-            bot b;
-            b.posX = line[0].toFloat();
-            b.posY = line[1].toFloat();
-            b.dirX = line[2].toFloat();
-            b.dirY = line[3].toFloat();
-            b.radius = line[4].toFloat();
-            b.v = line[5].toFloat();
-            b.bX = line[6].toFloat();
-            b.bY = line[7].toFloat();
-            b.laX = line[8].toFloat();
-            b.laY = line[9].toFloat();
-            b.alive = true;
-            data[frameNum].push_back(b);
-            bi++;
-        }
-        data.pop_back();
-        frameNum = data.size();
-        log("LogLoader: readed " + QString::number(frameNum) + " frames with " + QString::number(botNum) + " bots each.");
-    }
-    else
-    {
-        botNum=0;
-        frameNum=0;
-        log("LogLoader: couldn't open");
-    }
-    file.reset();
-    if(!watcher.files().empty())
-     watcher.removePaths(watcher.files());
-    watcher.addPath(path);
 }
 
 void LogLoader::fileChanged(const QString &path)

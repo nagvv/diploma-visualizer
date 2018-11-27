@@ -3,15 +3,18 @@
 
 #include <QWidget>
 #include <vector>
+#include <memory>
 #include "logloader.h"
 
 using std::vector;
+using std::shared_ptr;
+using std::make_shared;
 
 class Painter : public QWidget
 {
     Q_OBJECT
 private:
-    vector<bot> bots;
+    shared_ptr<vector<bot>> bots;
     vector<QLine> walls;
     float viewHeight;
     float viewX, viewY;
@@ -24,7 +27,7 @@ protected:
 
 public:
     explicit Painter(QWidget *parent = nullptr);
-    void paint(const vector<bot> &bots);
+    void paint(shared_ptr<vector<bot>> bots);
 
     void setViewPos(float x, float y);//Set the view center to (x, y).
     void moveViewPos(float mx, float my);//Moves the view center by (mx, my).

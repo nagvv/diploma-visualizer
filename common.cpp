@@ -1,4 +1,5 @@
 #include "common.h"
+#include <QThreadPool>
 
 Common::Common(QObject *parent) : QObject(parent)
 {

@@ -17,12 +17,22 @@ class Visualizer : public QWidget
 private:
     Ui::Visualizer *ui;
     int id;
-    QTimer *repainter;
     QTimer *updater;
     QDir dir;
     LogLoader ll;
     size_t frame;
+    int spcu;
+    int spto;
     bool pause;
+
+    //moving
+    bool mvLeft = false;
+    bool mvRight = false;
+    bool mvUp = false;
+    bool mvDown = false;
+    bool mvZoomIn = false;
+    bool mvZoomOut = false;
+
 public:
     explicit Visualizer(int id, QWidget *parent = nullptr);
     ~Visualizer();
@@ -30,10 +40,10 @@ public:
 
 public slots:
     void vUpdate();
-    void repaint();
 
 private slots:
-
+    void keyPressEvent(QKeyEvent* key);
+    void keyReleaseEvent(QKeyEvent *key);
 
     void on_exitButton_clicked();
 
@@ -71,6 +81,7 @@ private slots:
     void on_shCenterCheckBox_stateChanged(int set);
     void on_shLookAtCheckBox_stateChanged(int set);
     void on_shBestPosCheckBox_stateChanged(int set);
+    void on_obsButton_clicked();
 };
 
 #endif // VISUALIZER_H

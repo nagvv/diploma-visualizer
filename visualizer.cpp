@@ -6,7 +6,7 @@
 #include <QFileInfo>
 
 Visualizer::Visualizer(int t_id, QWidget *parent) : QWidget(parent, Qt::Window), ui(new Ui::Visualizer),
-                                                    id(t_id), frame(0), pause(false)
+                                                    id(t_id), frame(0), spcu(0), spto(64), pause(false)
 {
     ui->setupUi(this);
 
@@ -20,25 +20,20 @@ Visualizer::Visualizer(int t_id, QWidget *parent) : QWidget(parent, Qt::Window),
     if(ui->chooseBox->count() > 0)
         ui->chooseBox->setCurrentIndex(0);
 
+    ll.readObs("obs1.txt");//default obstacles file name
     ui->painter->setWalls(ll.getWalls());
-
-    repainter = new QTimer(this);
-    connect(repainter, SIGNAL(timeout()), this, SLOT(repaint()));
-    repainter->start(10);
 
     updater = new QTimer(this);
     connect(updater, SIGNAL(timeout()), this, SLOT(vUpdate()));
-    updater->start(64);
+    updater->start(16);
 
     log(QString("Visualizer ") + QString::number(id) + QString("successfully constructed."));
 }
 
 Visualizer::~Visualizer()
 {
-    disconnect(repainter, SIGNAL(timeout()), this, SLOT(repaint()));
     disconnect(updater, SIGNAL(timeout()), this, SLOT(vUpdate()));
     delete ui;
-    delete repainter;
     delete updater;
 }
 
@@ -58,26 +53,94 @@ void Visualizer::vUpdate()
         if(!pause)
         {
             ui->painter->paint(ll.getData()[frame]);
-            frame++;
+            spcu+=updater->interval();
+            if(spcu >= spto)
+            {
+                frame+= spcu / spto;
+                spcu = spcu % spto;
+            }
         }
     }
 
-    if(common.isRunning() && frame == ll.getFrameNum() - 1)
+    if(common.isRunning() && frame >= ll.getFrameNum() - 1)
         ll.read(ui->chooseBox->currentText());
-}
 
-void Visualizer::repaint()
-{
     QString text;
-    text += QString("zoom: ") + QString::number(100/ui->painter->getViewHeight());
+    text += QString("zoom: ") + QString::number(150/ui->painter->getViewHeight());
     text += QString(", x: ") + QString::number(ui->painter->getViewX());
     text += QString(", y: ") + QString::number(ui->painter->getViewY());
-    text += QString(", speed:") + QString::number(64./updater->interval());
+    text += QString(", speed:") + QString::number(64./spto);
     text += QString(", frame:") + QString::number(frame + 1) + "/" + QString::number(ll.getFrameNum());
     if(pause)
         text+=", paused";
     ui->statusBar->setText(text);
-    QWidget::repaint();
+    if(mvUp)
+        ui->painter->moveViewPos(0, -0.8 * ui->painter->getViewHeight()/100);
+    if(mvLeft)
+        ui->painter->moveViewPos(-0.8 * ui->painter->getViewHeight()/100, 0);
+    if(mvDown)
+        ui->painter->moveViewPos(0, 0.8 * ui->painter->getViewHeight()/100);
+    if(mvRight)
+        ui->painter->moveViewPos(0.8 * ui->painter->getViewHeight()/100, 0);
+    if(mvZoomIn)
+        ui->painter->addZoom(-0.04f);
+    if(mvZoomOut)
+        ui->painter->addZoom(0.04f);
+
+    repaint();
+}
+
+void Visualizer::keyPressEvent(QKeyEvent *key)
+{
+    switch (key->key())
+    {
+    case Qt::Key_W:
+        mvUp = true;
+        break;
+    case Qt::Key_A:
+        mvLeft = true;
+        break;
+    case Qt::Key_S:
+        mvDown = true;
+        break;
+    case Qt::Key_D:
+        mvRight = true;
+        break;
+    case Qt::Key_E:
+        mvZoomIn = true;
+        break;
+    case Qt::Key_Q:
+        mvZoomOut = true;
+        break;
+    case Qt::Key_Space:
+        pause = !pause;
+        break;
+    }
+}
+
+void Visualizer::keyReleaseEvent(QKeyEvent *key)
+{
+    switch (key->key())
+    {
+    case Qt::Key_W:
+        mvUp = false;
+        break;
+    case Qt::Key_A:
+        mvLeft = false;
+        break;
+    case Qt::Key_S:
+        mvDown = false;
+        break;
+    case Qt::Key_D:
+        mvRight = false;
+        break;
+    case Qt::Key_E:
+        mvZoomIn = false;
+        break;
+    case Qt::Key_Q:
+        mvZoomOut = false;
+        break;
+    }
 }
 
 void Visualizer::on_exitButton_clicked()
@@ -139,21 +202,31 @@ void Visualizer::on_playPauseButton_clicked()
 
 void Visualizer::on_incSpeedButton_clicked()
 {
-    int current = updater->interval();
-    if( current > 1 )
-        updater->setInterval(current/2);
+    if( spto > 1 )
+    {
+        spto/=2;
+        ui->decSpeedButton->setEnabled(true);
+    }
+
+    if(spto == 1)
+        ui->incSpeedButton->setEnabled(false);
 }
 
 void Visualizer::on_decSpeedButton_clicked()
 {
-    int current = updater->interval();
-    if( current < 512 )
-        updater->setInterval(current*2);
+    if( spto < 512 )
+    {
+        spto*=2;
+        ui->incSpeedButton->setEnabled(true);
+    }
+
+    if(spto == 512)
+        ui->decSpeedButton->setEnabled(false);
 }
 
 void Visualizer::on_resetSpeedButton_clicked()
 {
-    updater->setInterval(64);
+    spto = 64;
 }
 
 void Visualizer::on_restartButton_clicked()
@@ -183,6 +256,16 @@ void Visualizer::on_chooseButton_clicked()
         ui->chooseBox->setCurrentIndex(0);
 }
 
+void Visualizer::on_obsButton_clicked()
+{
+    QString s = QFileDialog::getOpenFileName(this, "Choose obstacles file", dir.path());
+    if(!s.isEmpty())
+    {
+        ll.readObs(s);
+        ui->painter->setWalls(ll.getWalls());
+    }
+}
+
 void Visualizer::on_shCenterCheckBox_stateChanged(int set)
 {
     ui->painter->setShowCenter(set);
@@ -197,3 +280,5 @@ void Visualizer::on_shBestPosCheckBox_stateChanged(int set)
 {
     ui->painter->setShowBestPos(set);
 }
+
+

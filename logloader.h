@@ -8,6 +8,8 @@
 #include <memory>
 
 using std::vector;
+using std::shared_ptr;
+using std::make_shared;
 
 struct bot
 {
@@ -23,7 +25,7 @@ class LogLoader: public QObject
 {
     Q_OBJECT
 private:
-    vector<vector<bot>> data;
+    vector< shared_ptr< vector<bot> > > data;
     vector<QLine> walls;
     size_t botNum;
     size_t frameNum;
@@ -37,9 +39,10 @@ public:
     LogLoader(QString path);
     ~LogLoader();
     void read(QString path);
+    void readObs(QString path);
     //update -- executed by signal from qfilesystemwatcher
 
-    inline const vector<vector<bot>> &getData() { return data; }
+    inline vector< shared_ptr< vector<bot> > > &getData() { return data; }
     inline const vector<QLine> &getWalls() { return walls; }
     inline size_t getBotNum() { return botNum; }
     inline size_t getFrameNum() { return frameNum; }
