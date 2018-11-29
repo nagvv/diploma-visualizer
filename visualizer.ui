@@ -209,9 +209,9 @@
             </widget>
            </item>
            <item row="1" column="3">
-            <widget class="QCheckBox" name="checkBox_4">
-             <property name="enabled">
-              <bool>false</bool>
+            <widget class="QCheckBox" name="shTracesCheckBox">
+             <property name="toolTip">
+              <string>show traces</string>
              </property>
              <property name="text">
               <string/>

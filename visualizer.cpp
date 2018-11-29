@@ -46,10 +46,22 @@ void Visualizer::closeEvent(QCloseEvent *event)
 
 void Visualizer::vUpdate()
 {
+    float bv = INFINITY;
     if(ll.isOkay())
     {
         if(frame >= ll.getFrameNum())
+        {
             frame=0;
+            ui->painter->resetTraces();
+        }
+
+        if(ll.getData()[frame])
+            for(auto &b: *ll.getData()[frame])
+            {
+                if(b.v < bv)
+                    bv = b.v;
+            }
+
         if(!pause)
         {
             ui->painter->paint(ll.getData()[frame]);
@@ -62,8 +74,13 @@ void Visualizer::vUpdate()
         }
     }
 
-    if(common.isRunning() && frame >= ll.getFrameNum() - 1)
+    if(common.isRunning() && frame + 1 >= ll.getFrameNum())
+    {
         ll.read(ui->chooseBox->currentText());
+    }
+
+    if(ll.isObsFileChanged())
+        ui->painter->setWalls(ll.getWalls());
 
     QString text;
     text += QString("zoom: ") + QString::number(150/ui->painter->getViewHeight());
@@ -71,6 +88,8 @@ void Visualizer::vUpdate()
     text += QString(", y: ") + QString::number(ui->painter->getViewY());
     text += QString(", speed:") + QString::number(64./spto);
     text += QString(", frame:") + QString::number(frame + 1) + "/" + QString::number(ll.getFrameNum());
+
+    text += QString(", best:") + QString::number(bv);
     if(pause)
         text+=", paused";
     ui->statusBar->setText(text);
@@ -227,11 +246,14 @@ void Visualizer::on_decSpeedButton_clicked()
 void Visualizer::on_resetSpeedButton_clicked()
 {
     spto = 64;
+    ui->incSpeedButton->setEnabled(true);
+    ui->decSpeedButton->setEnabled(true);
 }
 
 void Visualizer::on_restartButton_clicked()
 {
     frame=0;
+    ui->painter->resetTraces();
 }
 
 void Visualizer::on_chooseBox_currentIndexChanged(const QString &file)
@@ -241,6 +263,7 @@ void Visualizer::on_chooseBox_currentIndexChanged(const QString &file)
     if(ll.isOkay())
         log("visualizer: logloader is okay");
     frame = 0;
+    ui->painter->resetTraces();
 }
 
 void Visualizer::on_chooseButton_clicked()
@@ -281,4 +304,7 @@ void Visualizer::on_shBestPosCheckBox_stateChanged(int set)
     ui->painter->setShowBestPos(set);
 }
 
-
+void Visualizer::on_shTracesCheckBox_stateChanged(int set)
+{
+    ui->painter->setShowTraces(set);
+}

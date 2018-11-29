@@ -13,11 +13,38 @@ Painter::Painter(QWidget *parent) : QWidget(parent)
     showCenter = true;
     showLookAt = false;
     showBestPos = false;
+    showTraces = false;
+    recordTraces = true;
 }
 
 void Painter::paint(shared_ptr<vector<bot>> bots)
 {
     this->bots = bots;
+    if(this->bots && recordTraces)
+    {
+        traces.emplace_back();
+        for(size_t i = 0; i < bots->size(); ++i)
+        {
+            QLineF ql;
+            bool p1set = false;
+            if( traces.size() > 1 )
+                if( i < traces[traces.size() - 2].size() )
+                {
+                    p1set = true;
+                    ql.setP1(traces[traces.size()-2][i].first.p2());
+                }
+            ql.setP2(QPointF((*bots)[i].posX, (*bots)[i].posY));
+
+            if(!p1set)
+                ql.setP1(ql.p2());
+            float redcv = (*bots)[i].v/150;
+            if(redcv > 1)
+                redcv = 1.;
+            if(redcv < 0)//because noises
+                redcv = 0.;
+            traces.back().push_back(make_pair(ql, QColor::fromRgbF(redcv, 1. - redcv, 0)));
+        }
+    }
 }
 
 void Painter::setViewPos(float x, float y)
@@ -42,9 +69,14 @@ void Painter::addZoom(float az)
     viewHeight *= std::exp2(az);
 }
 
-void Painter::setWalls(const vector<QLine> &walls)
+void Painter::setWalls(const vector<QLineF> &walls)
 {
     this->walls = walls;
+}
+
+void Painter::resetTraces()
+{
+    traces.clear();
 }
 
 void Painter::paintEvent(QPaintEvent *event)
@@ -56,6 +88,20 @@ void Painter::paintEvent(QPaintEvent *event)
 
     float size = this->height() / viewHeight;
     float viewWidth = viewHeight * this->width() / this->height();
+
+    //draw traces
+    if(showTraces)
+    {
+        for(auto &frame : traces)
+            for(auto &t: frame)
+            {
+                QLineF trw = QLineF((t.first.x1() - viewX + viewWidth/2)*size, (t.first.y1() - viewY + viewHeight/2)*size,
+                                  (t.first.x2() - viewX + viewWidth/2)*size, (t.first.y2() - viewY + viewHeight/2)*size);
+                painter.setPen(t.second);
+                painter.drawLine(trw);
+            }
+        painter.setPen(Qt::black);
+    }
 
     //draw them!
     if(bots)
@@ -90,7 +136,7 @@ void Painter::paintEvent(QPaintEvent *event)
     //draw walls
     for(auto &w: walls)
     {
-        QLine trw = QLine((w.x1() - viewX + viewWidth/2)*size, (w.y1() - viewY + viewHeight/2)*size,
+        QLineF trw = QLineF((w.x1() - viewX + viewWidth/2)*size, (w.y1() - viewY + viewHeight/2)*size,
                           (w.x2() - viewX + viewWidth/2)*size, (w.y2() - viewY + viewHeight/2)*size);
         painter.drawLine(trw);
     }
@@ -98,8 +144,8 @@ void Painter::paintEvent(QPaintEvent *event)
     if(showCenter)//draw center mark
     {
         int ls = 10;
-        QLine l1(-ls, 0, ls, 0), l2(0, -ls, 0, ls);
-        QPoint trp( this->width()/2 - viewX*size, this->height()/2 - viewY*size );
+        QLineF l1(-ls, 0, ls, 0), l2(0, -ls, 0, ls);
+        QPointF trp( this->width()/2 - viewX*size, this->height()/2 - viewY*size );
 
         l1.translate( trp );
         l2.translate( trp );

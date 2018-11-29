@@ -2,20 +2,23 @@
 #include <QTextStream>
 #include "common.h"
 
-LogLoader::LogLoader() : botNum(0), frameNum(0)
+LogLoader::LogLoader() : botNum(0), frameNum(0), bObsChanged(false)
 {
-    connect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)));
+    connect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)), Qt::QueuedConnection);
+    connect(&obsWatcher, SIGNAL(fileChanged(const QString&)), this, SLOT(obsFileChanged(const QString&)), Qt::QueuedConnection);
 }
 
-LogLoader::LogLoader(QString path)
+LogLoader::LogLoader(QString path) : botNum(0), frameNum(0), bObsChanged(false)
 {
-    connect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)));
+    connect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)), Qt::QueuedConnection);
+    connect(&obsWatcher, SIGNAL(fileChanged(const QString&)), this, SLOT(obsFileChanged(const QString&)), Qt::QueuedConnection);
     read(path);
 }
 
 LogLoader::~LogLoader()
 {
     disconnect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)));
+    disconnect(&obsWatcher, SIGNAL(fileChanged(const QString&)), this, SLOT(obsFileChanged(const QString&)));
 }
 
 void LogLoader::read(QString path)
@@ -88,9 +91,10 @@ void LogLoader::read(QString path)
         frameNum=0;
         log("LogLoader: couldn't open");
     }
+    file->close();
     file.reset();
     if(!watcher.files().empty())
-     watcher.removePaths(watcher.files());
+        watcher.removePaths(watcher.files());
     watcher.addPath(path);
 }
 
@@ -117,7 +121,7 @@ void LogLoader::readObs(QString path)
                     break;
                 }
                 //skipped collision check(may be needed, or not)
-                walls.push_back(QLine(sl[1].toFloat(), sl[2].toFloat(), sl[3].toFloat(), sl[4].toFloat()));
+                walls.push_back(QLineF(sl[1].toDouble(), sl[2].toDouble(), sl[3].toDouble(), sl[4].toDouble()));
                 continue;
             }
             else
@@ -132,10 +136,31 @@ void LogLoader::readObs(QString path)
         log("LogLoader: couldn't load obstacles file");
     file.close();
     //skipped process_obstacles(not needed)
+
+    if(!obsWatcher.files().empty())
+        obsWatcher.removePaths(obsWatcher.files());
+    obsWatcher.addPath(path);
+}
+
+bool LogLoader::isObsFileChanged()
+{
+    if(bObsChanged)
+    {
+        bObsChanged = false;
+        return true;
+    }
+    return false;
 }
 
 void LogLoader::fileChanged(const QString &path)
 {
     log("LogLoader: Watcher: " + path + " changed.");
     read(path);
+}
+
+void LogLoader::obsFileChanged(const QString &path)
+{
+    log("LogLoader: Watcher: obstacles file " + path + " changed.");
+    readObs(path);
+    bObsChanged = true;
 }

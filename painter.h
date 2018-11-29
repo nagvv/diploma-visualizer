@@ -4,24 +4,30 @@
 #include <QWidget>
 #include <vector>
 #include <memory>
+#include <utility>
 #include "logloader.h"
 
 using std::vector;
 using std::shared_ptr;
 using std::make_shared;
+using std::pair;
+using std::make_pair;
 
 class Painter : public QWidget
 {
     Q_OBJECT
 private:
     shared_ptr<vector<bot>> bots;
-    vector<QLine> walls;
+    vector<QLineF> walls;
+    vector<vector<pair<QLineF, QColor>>> traces;
     float viewHeight;
     float viewX, viewY;
 
     bool showCenter;
     bool showLookAt;
     bool showBestPos;
+    bool showTraces;
+    bool recordTraces;
 protected:
     void paintEvent(QPaintEvent *event);
 
@@ -42,8 +48,10 @@ public:
     inline void setShowCenter(bool sh) { showCenter = sh; }
     inline void setShowLookAt(bool sh) { showLookAt = sh; }
     inline void setShowBestPos(bool sh) { showBestPos = sh; }
+    inline void setShowTraces(bool sh) { showTraces = sh; }
 
-    void setWalls(const vector<QLine>&);
+    void setWalls(const vector<QLineF>&);
+    void resetTraces();
 signals:
 
 public slots:

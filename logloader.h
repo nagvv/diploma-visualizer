@@ -26,13 +26,14 @@ class LogLoader: public QObject
     Q_OBJECT
 private:
     vector< shared_ptr< vector<bot> > > data;
-    vector<QLine> walls;
+    vector<QLineF> walls;
     size_t botNum;
     size_t frameNum;
     std::unique_ptr<QFile> file;
     bool okay = false;
     QFileSystemWatcher watcher;
-        //and other parameters
+    QFileSystemWatcher obsWatcher;
+    bool bObsChanged;
 
 public:
     LogLoader();
@@ -43,13 +44,16 @@ public:
     //update -- executed by signal from qfilesystemwatcher
 
     inline vector< shared_ptr< vector<bot> > > &getData() { return data; }
-    inline const vector<QLine> &getWalls() { return walls; }
+    inline const vector<QLineF> &getWalls() { return walls; }
     inline size_t getBotNum() { return botNum; }
     inline size_t getFrameNum() { return frameNum; }
     inline bool isOkay() { return okay; }
 
+    bool isObsFileChanged();
+
 public slots:
     void fileChanged(const QString &path);
+    void obsFileChanged(const QString &path);
 };
 
 #endif // LOGLOADER_H
