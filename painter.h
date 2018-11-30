@@ -28,6 +28,10 @@ private:
     bool showBestPos;
     bool showTraces;
     bool recordTraces;
+    bool colorRobots;
+
+    int maxSkip;
+    int itSkip;
 protected:
     void paintEvent(QPaintEvent *event);
 
@@ -49,6 +53,7 @@ public:
     inline void setShowLookAt(bool sh) { showLookAt = sh; }
     inline void setShowBestPos(bool sh) { showBestPos = sh; }
     inline void setShowTraces(bool sh) { showTraces = sh; }
+    inline void setColorRobots(bool sh) { colorRobots = sh; }
 
     void setWalls(const vector<QLineF>&);
     void resetTraces();

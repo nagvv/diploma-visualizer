@@ -219,9 +219,9 @@
             </widget>
            </item>
            <item row="1" column="4">
-            <widget class="QCheckBox" name="checkBox_5">
-             <property name="enabled">
-              <bool>false</bool>
+            <widget class="QCheckBox" name="colorBotsChBox">
+             <property name="toolTip">
+              <string>color robots by it's value</string>
              </property>
              <property name="text">
               <string/>

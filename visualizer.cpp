@@ -308,3 +308,8 @@ void Visualizer::on_shTracesCheckBox_stateChanged(int set)
 {
     ui->painter->setShowTraces(set);
 }
+
+void Visualizer::on_colorBotsChBox_stateChanged(int set)
+{
+    ui->painter->setColorRobots(set);
+}

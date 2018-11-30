@@ -15,6 +15,10 @@ Painter::Painter(QWidget *parent) : QWidget(parent)
     showBestPos = false;
     showTraces = false;
     recordTraces = true;
+    colorRobots = false;
+
+    maxSkip = 5;
+    itSkip = 0;
 }
 
 void Painter::paint(shared_ptr<vector<bot>> bots)
@@ -22,6 +26,12 @@ void Painter::paint(shared_ptr<vector<bot>> bots)
     this->bots = bots;
     if(this->bots && recordTraces)
     {
+        if(itSkip < maxSkip)
+        {
+            itSkip++;
+            return;
+        }
+        itSkip = 0;
         traces.emplace_back();
         for(size_t i = 0; i < bots->size(); ++i)
         {
@@ -110,7 +120,17 @@ void Painter::paintEvent(QPaintEvent *event)
             float px = (b.posX - viewX + viewWidth/2)*size;
             float py = (b.posY - viewY + viewHeight/2)*size;
             float sz = 2*b.radius * size;
+            if(colorRobots)
+            {
+                float redcv = b.v/150;
+                if(redcv > 1)
+                    redcv = 1.;
+                if(redcv < 0)//because noises
+                    redcv = 0.;
+                painter.setPen(QColor::fromRgbF(redcv, 1 - redcv, 0));
+            }
             painter.drawEllipse(px - sz/2, py - sz/2, sz, sz);
+
             float dx = b.dirX * size;
             float dy = b.dirY * size;
             painter.drawLine(px, py, px + dx, py + dy);
@@ -121,7 +141,6 @@ void Painter::paintEvent(QPaintEvent *event)
                 float lay = b.laY * size;
                 painter.setPen(QColor::fromRgb(0, 200, 0));
                 painter.drawLine(px, py, px + lax, py + lay);
-                painter.setPen(Qt::black);
             }
             if(showBestPos)
             {
@@ -129,8 +148,8 @@ void Painter::paintEvent(QPaintEvent *event)
                 float by = b.bY * size;
                 painter.setPen(QColor::fromRgb(200, 0, 0));
                 painter.drawLine(px, py, px + bx, py + by);
-                painter.setPen(Qt::black);
             }
+            painter.setPen(Qt::black);
         }
 
     //draw walls
