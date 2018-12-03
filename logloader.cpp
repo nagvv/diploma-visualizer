@@ -83,7 +83,13 @@ void LogLoader::read(QString path)
         }
         data.pop_back();
         frameNum = data.size();
-        log("LogLoader: readed " + QString::number(frameNum) + " frames with " + QString::number(botNum) + " bots each.");
+        if( frameNum == 0 )
+        {
+            log("LogLoader: readed no frame");
+            okay = false;
+        }
+        else
+            log("LogLoader: readed " + QString::number(frameNum) + " frames with " + QString::number(botNum) + " bots each.");
     }
     else
     {
