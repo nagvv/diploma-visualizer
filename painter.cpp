@@ -4,6 +4,7 @@
 #include <QPen>
 #include <QPainter>
 #include <cmath>
+#include <qtgifimage/src/gifimage/qgifimage.h>
 
 Painter::Painter(QWidget *parent) : QWidget(parent)
 {
@@ -89,6 +90,41 @@ void Painter::resetTraces()
     traces.clear();
 }
 
+void Painter::makeGif(const vector<shared_ptr<vector<bot> > > &data)
+{
+    shared_ptr<vector<bot>> save = bots;//saving current frame
+    resetTraces();
+
+    QGifImage gif;
+    gif.setDefaultDelay(1);
+
+    QImage image(this->width(), this->height(), QImage::Format_RGB32);
+    for (unsigned int i = 0; i < data.size(); i+=2) //draw every second frame
+    {
+        paint(data[i]);
+        image.fill(QColor(Qt::white));
+        QPainter painter(&image);
+        float size = this->height() / viewHeight;
+        float viewWidth = viewHeight * this->width() / this->height();
+
+        if(showTraces)
+            drawTraces(painter, viewWidth, size);
+
+        drawBots(painter, viewWidth, size);
+
+        drawWalls(painter, viewWidth, size);
+
+        if(showCenter)//draw center mark
+            drawMark(painter, viewWidth, size);
+
+        gif.addFrame(image);
+    }
+    gif.save("outgif.gif");
+
+    resetTraces();
+    paint(save);//returning to saved frame
+}
+
 void Painter::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
@@ -99,21 +135,32 @@ void Painter::paintEvent(QPaintEvent *event)
     float size = this->height() / viewHeight;
     float viewWidth = viewHeight * this->width() / this->height();
 
-    //draw traces
     if(showTraces)
-    {
-        for(auto &frame : traces)
-            for(auto &t: frame)
-            {
-                QLineF trw = QLineF((t.first.x1() - viewX + viewWidth/2)*size, (t.first.y1() - viewY + viewHeight/2)*size,
-                                  (t.first.x2() - viewX + viewWidth/2)*size, (t.first.y2() - viewY + viewHeight/2)*size);
-                painter.setPen(t.second);
-                painter.drawLine(trw);
-            }
-        painter.setPen(Qt::black);
-    }
+        drawTraces(painter, viewWidth, size);
 
-    //draw them!
+    drawBots(painter, viewWidth, size);
+
+    drawWalls(painter, viewWidth, size);
+
+    if(showCenter)//draw center mark
+        drawMark(painter, viewWidth, size);
+}
+
+void Painter::drawTraces(QPainter &painter, float viewWidth, float size)
+{
+    for(auto &frame : traces)
+        for(auto &t: frame)
+        {
+            QLineF trw = QLineF((t.first.x1() - viewX + viewWidth/2)*size, (t.first.y1() - viewY + viewHeight/2)*size,
+                              (t.first.x2() - viewX + viewWidth/2)*size, (t.first.y2() - viewY + viewHeight/2)*size);
+            painter.setPen(t.second);
+            painter.drawLine(trw);
+        }
+    painter.setPen(Qt::black);
+}
+
+void Painter::drawBots(QPainter &painter, float viewWidth, float size)
+{
     if(bots)
         for(auto &b: *bots)
         {
@@ -151,25 +198,27 @@ void Painter::paintEvent(QPaintEvent *event)
             }
             painter.setPen(Qt::black);
         }
+}
 
-    //draw walls
+void Painter::drawWalls(QPainter &painter, float viewWidth, float size)
+{
     for(auto &w: walls)
     {
         QLineF trw = QLineF((w.x1() - viewX + viewWidth/2)*size, (w.y1() - viewY + viewHeight/2)*size,
                           (w.x2() - viewX + viewWidth/2)*size, (w.y2() - viewY + viewHeight/2)*size);
         painter.drawLine(trw);
     }
+}
 
-    if(showCenter)//draw center mark
-    {
-        int ls = 10;
-        QLineF l1(-ls, 0, ls, 0), l2(0, -ls, 0, ls);
-        QPointF trp( this->width()/2 - viewX*size, this->height()/2 - viewY*size );
+void Painter::drawMark(QPainter &painter, float viewWidth, float size)
+{
+    int ls = 10;
+    QLineF l1(-ls, 0, ls, 0), l2(0, -ls, 0, ls);
+    QPointF trp( this->width()/2 - viewX*size, this->height()/2 - viewY*size );
 
-        l1.translate( trp );
-        l2.translate( trp );
+    l1.translate( trp );
+    l2.translate( trp );
 
-        painter.drawLine(l1);
-        painter.drawLine(l2);
-    }
+    painter.drawLine(l1);
+    painter.drawLine(l2);
 }

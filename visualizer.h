@@ -84,6 +84,8 @@ private slots:
     void on_obsButton_clicked();
     void on_shTracesCheckBox_stateChanged(int set);
     void on_colorBotsChBox_stateChanged(int set);
+    void on_refreshButton_clicked();
+    void on_makeGifButton_clicked();
 };
 
 #endif // VISUALIZER_H

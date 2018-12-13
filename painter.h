@@ -57,6 +57,15 @@ public:
 
     void setWalls(const vector<QLineF>&);
     void resetTraces();
+
+    void makeGif(const vector< shared_ptr< vector<bot> > > &data);
+
+private:
+    void drawTraces(QPainter &painter, float viewWidth, float size);
+    void drawBots(QPainter &painter, float viewWidth, float size);
+    void drawWalls(QPainter &painter, float viewWidth, float size);
+    void drawMark(QPainter &painter, float viewWidth, float size);
+
 signals:
 
 public slots:

@@ -20,7 +20,7 @@ Visualizer::Visualizer(int t_id, QWidget *parent) : QWidget(parent, Qt::Window),
     if(ui->chooseBox->count() > 0)
         ui->chooseBox->setCurrentIndex(0);
 
-    ll.readObs("obs1.txt");//default obstacles file name
+    ll.readObs(dir.path() + '/' + "obs1.txt");//default obstacles file name
     ui->painter->setWalls(ll.getWalls());
 
     updater = new QTimer(this);
@@ -74,9 +74,9 @@ void Visualizer::vUpdate()
         }
     }
 
-    if(common.isRunning() && frame + 1 >= ll.getFrameNum())
+    if(common.isRunning() && frame + 1 >= ll.getFrameNum() && !ui->chooseBox->currentText().isEmpty())
     {
-        ll.read(ui->chooseBox->currentText());
+        ll.read(dir.path() + '/' + ui->chooseBox->currentText());
     }
 
     if(ll.isObsFileChanged())
@@ -279,6 +279,16 @@ void Visualizer::on_chooseButton_clicked()
         ui->chooseBox->setCurrentIndex(0);
 }
 
+void Visualizer::on_refreshButton_clicked()
+{
+    QStringList fileList = dir.entryList(QStringList("log_*_*"), QDir::Files);
+    QString curInd = ui->chooseBox->currentText();
+    ui->chooseBox->clear();
+    ui->chooseBox->addItems(fileList);
+    if(ui->chooseBox->count() > 0)
+        ui->chooseBox->setCurrentIndex(ui->chooseBox->findText(curInd));
+}
+
 void Visualizer::on_obsButton_clicked()
 {
     QString s = QFileDialog::getOpenFileName(this, "Choose obstacles file", dir.path());
@@ -312,4 +322,11 @@ void Visualizer::on_shTracesCheckBox_stateChanged(int set)
 void Visualizer::on_colorBotsChBox_stateChanged(int set)
 {
     ui->painter->setColorRobots(set);
+}
+
+
+void Visualizer::on_makeGifButton_clicked()
+{
+    //make thread
+    ui->painter->makeGif(ll.getData());
 }
