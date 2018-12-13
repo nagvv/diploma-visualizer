@@ -1,0 +1,3 @@
+[submodule "QtGifImage"]
+	path = QtGifImage
+	url = https://github.com/jiangcaiyang/QtGifImage.git
