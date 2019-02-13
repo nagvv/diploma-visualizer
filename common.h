@@ -19,6 +19,7 @@ private:
     QProcess *process;
     MainWindow *pFather;
     bool pRunning;
+    QString output;
 
 public:
     explicit Common(QObject *parent = nullptr);
@@ -34,6 +35,7 @@ public:
     QString getExecPath();
     QString getConfigPath();
 
+    inline QString getOutput() { return output; };
     inline bool isRunning() { return pRunning; }
 signals:
     void pStartedSignal();

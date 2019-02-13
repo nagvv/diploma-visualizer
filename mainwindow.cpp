@@ -135,7 +135,7 @@ void MainWindow::on_editButton_clicked()
 
 void MainWindow::pStarted()
 {
-    ui->runStatusLabel->setText("Started");
+    ui->runStatus->setText("Started");
     //log("mainWindow: approved");
     ui->startButton->setEnabled(false);
     ui->stopButton->setEnabled(true);
@@ -144,13 +144,15 @@ void MainWindow::pStarted()
 
 void MainWindow::pStateChanged(QProcess::ProcessState pState)
 {
-    ui->runStatusLabel->setText(QString("State changed to: %1").arg(pState));
+    ui->runStatus->setText(QString("State changed to: %1").arg(pState));
     //log("mainWindow: approved");
 }
 
 void MainWindow::pFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    ui->runStatusLabel->setText(QString("Stopped with code: %1, and exitStatus: %2").arg(exitCode).arg(exitStatus));
+    QString text = QString("Finished with code: %1, and exitStatus: %2").arg(exitCode).arg(exitStatus);
+    text += "\n" + common.getOutput();
+    ui->runStatus->setText(text);
     //log("mainWindow: approved");
     ui->startButton->setEnabled(true);
     ui->stopButton->setEnabled(false);
@@ -181,7 +183,7 @@ void MainWindow::pErrorOccured(QProcess::ProcessError error)
         t+="An unknown error occurred. ";
         break;
     }
-    ui->runStatusLabel->setText(t);
+    ui->runStatus->setText(t);
     //log("mainWindow: approved");
     ui->startButton->setEnabled(true);
     ui->stopButton->setEnabled(false);

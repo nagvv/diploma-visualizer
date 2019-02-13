@@ -59,7 +59,7 @@ void Common::runExec(QWidget *parent, bool isMPI, int pnum)
     else
     {
         log(QString("common: running ") + file);
-        process->start("\"" + file + "\"");
+        process->start("\"" + file + "\"", arguments);
     }
 }
 
@@ -114,6 +114,7 @@ void Common::pStateChanged(QProcess::ProcessState pState)
 
 void Common::pFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    output = process->readAllStandardOutput();
     pRunning = false;
     pFather = nullptr;
     log(QString("process: finished with exitCode: %1, and exitStatus: %2").arg(exitCode).arg(exitStatus));
