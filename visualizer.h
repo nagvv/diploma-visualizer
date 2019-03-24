@@ -86,6 +86,7 @@ private slots:
     void on_colorBotsChBox_stateChanged(int set);
     void on_refreshButton_clicked();
     void on_makeGifButton_clicked();
+    void on_fillRobotsCheckBox_stateChanged(int arg1);
 };
 
 #endif // VISUALIZER_H

@@ -324,9 +324,15 @@ void Visualizer::on_colorBotsChBox_stateChanged(int set)
     ui->painter->setColorRobots(set);
 }
 
+void Visualizer::on_fillRobotsCheckBox_stateChanged(int set)
+{
+    ui->painter->setFillRobots(set);
+}
 
 void Visualizer::on_makeGifButton_clicked()
 {
     //make thread
     ui->painter->makeGif(ll.getData());
 }
+
+

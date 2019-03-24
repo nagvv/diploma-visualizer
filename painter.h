@@ -29,6 +29,7 @@ private:
     bool showTraces;
     bool recordTraces;
     bool colorRobots;
+    bool fillRobots;
 
     int maxSkip;
     int itSkip;
@@ -54,6 +55,7 @@ public:
     inline void setShowBestPos(bool sh) { showBestPos = sh; }
     inline void setShowTraces(bool sh) { showTraces = sh; }
     inline void setColorRobots(bool sh) { colorRobots = sh; }
+    inline void setFillRobots(bool sh) { fillRobots = sh; }
 
     void setWalls(const vector<QLineF>&);
     void resetTraces();

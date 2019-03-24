@@ -17,6 +17,7 @@ Painter::Painter(QWidget *parent) : QWidget(parent)
     showTraces = false;
     recordTraces = true;
     colorRobots = false;
+    fillRobots = false;
 
     maxSkip = 5;
     itSkip = 0;
@@ -175,7 +176,17 @@ void Painter::drawBots(QPainter &painter, float viewWidth, float size)
                 if(redcv < 0)//because noises
                     redcv = 0.;
                 painter.setPen(QColor::fromRgbF(redcv, 1 - redcv, 0));
+            }      
+
+            if ( fillRobots )
+            {
+                painter.setBrush(painter.pen().color());
+                if ( colorRobots )
+                    painter.setPen(Qt::black);
+                else
+                    painter.setPen(Qt::white);
             }
+
             painter.drawEllipse(px - sz/2, py - sz/2, sz, sz);
 
             float dx = b.dirX * size;
@@ -196,6 +207,8 @@ void Painter::drawBots(QPainter &painter, float viewWidth, float size)
                 painter.setPen(QColor::fromRgb(200, 0, 0));
                 painter.drawLine(px, py, px + bx, py + by);
             }
+
+            painter.setBrush(Qt::BrushStyle::NoBrush);
             painter.setPen(Qt::black);
         }
 }

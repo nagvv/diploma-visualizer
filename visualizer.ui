@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>504</width>
+    <width>522</width>
     <height>548</height>
    </rect>
   </property>
@@ -139,7 +139,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0" columnstretch="0,0,0,0,0">
+          <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
             <widget class="QLabel" name="label">
              <property name="text">
@@ -147,24 +147,20 @@
              </property>
             </widget>
            </item>
+           <item row="1" column="2">
+            <widget class="QCheckBox" name="shBestPosCheckBox">
+             <property name="toolTip">
+              <string>Show best value pos</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="1">
             <widget class="QLabel" name="label_2">
              <property name="text">
               <string>2</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>3</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="3">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>4</string>
              </property>
             </widget>
            </item>
@@ -188,23 +184,10 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QCheckBox" name="shLookAtCheckBox">
-             <property name="toolTip">
-              <string>Show looking at lines</string>
-             </property>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_3">
              <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QCheckBox" name="shBestPosCheckBox">
-             <property name="toolTip">
-              <string>Show best value pos</string>
-             </property>
-             <property name="text">
-              <string/>
+              <string>3</string>
              </property>
             </widget>
            </item>
@@ -212,6 +195,23 @@
             <widget class="QCheckBox" name="shTracesCheckBox">
              <property name="toolTip">
               <string>show traces</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>4</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QCheckBox" name="shLookAtCheckBox">
+             <property name="toolTip">
+              <string>Show looking at lines</string>
              </property>
              <property name="text">
               <string/>
@@ -228,10 +228,33 @@
              </property>
             </widget>
            </item>
+           <item row="0" column="5">
+            <widget class="QLabel" name="label_6">
+             <property name="text">
+              <string>6</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="5">
+            <widget class="QCheckBox" name="fillRobotsCheckBox">
+             <property name="toolTip">
+              <string>fill robots</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
          <item>
           <widget class="QPushButton" name="restartButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>restart</string>
            </property>
