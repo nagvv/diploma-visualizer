@@ -1,14 +1,15 @@
+#include <cstdint>
 #include "logloader.h"
-#include <QTextStream>
+#include <QDataStream>
 #include "common.h"
 
-LogLoader::LogLoader() : botNum(0), frameNum(0), bObsChanged(false)
+LogLoader::LogLoader() : frameNum(0), bObsChanged(false)
 {
     connect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)), Qt::QueuedConnection);
     connect(&obsWatcher, SIGNAL(fileChanged(const QString&)), this, SLOT(obsFileChanged(const QString&)), Qt::QueuedConnection);
 }
 
-LogLoader::LogLoader(QString path) : botNum(0), frameNum(0), bObsChanged(false)
+LogLoader::LogLoader(QString path) : frameNum(0), bObsChanged(false)
 {
     connect(&watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(fileChanged(const QString&)), Qt::QueuedConnection);
     connect(&obsWatcher, SIGNAL(fileChanged(const QString&)), this, SLOT(obsFileChanged(const QString&)), Qt::QueuedConnection);
@@ -25,76 +26,52 @@ void LogLoader::read(QString path)
 {
     file = std::unique_ptr<QFile>(new QFile(path));
     log("LogLoader: opening " + path);
-    okay = file->open(QIODevice::ReadOnly | QIODevice::Text);
+    okay = file->open(QIODevice::ReadOnly);
     if(okay)
     {
         log("LogLoader: successfully opened");
-        QTextStream in(file.get());
-        botNum=0;
-        frameNum=0;
-        size_t bi = 0;
+        QDataStream in(file.get());
+
+        uint32_t lastStep = 0;
+        uint32_t step = 0;
         data.clear();
         data.emplace_back(make_shared<vector<bot>>());
         while(!in.atEnd())
         {
-            QStringList line = in.readLine().split(' ');
-            if(line.size() == 1)
+            in.readRawData(reinterpret_cast<char *>(&step), sizeof(step));
+            if (step != lastStep)
             {
-                line = in.readLine().split(' ');
-                if(line.size() == 1)
-                {
-                    if(botNum==0)
-                    {
-                        botNum=bi;
-                        bi=0;
-                    }
-                    frameNum++;
-                    data.emplace_back(make_shared<vector<bot>>());
-                    continue;
-                }
-                else
-                {
-                    //okay = false;
-                    //log("LogLoader: bad file _0");
-                    break;
-                }
-            }
-            else if(line.size() != 10)
-            {
-                //okay = false;
-                //log("LogLoader: bad file _1, line size = " + QString::number(line.size()));
-                break;
+                lastStep = step;
+                data.emplace_back(make_shared<vector<bot>>());
             }
 
             bot b;
-            b.posX = line[0].toFloat();
-            b.posY = line[1].toFloat();
-            b.dirX = line[2].toFloat();
-            b.dirY = line[3].toFloat();
-            b.radius = line[4].toFloat();
-            b.v = line[5].toFloat();
-            b.bX = line[6].toFloat();
-            b.bY = line[7].toFloat();
-            b.laX = line[8].toFloat();
-            b.laY = line[9].toFloat();
+            in.readRawData(reinterpret_cast<char *>(&b.posX), sizeof(step));
+            in.readRawData(reinterpret_cast<char *>(&b.posY), sizeof(step));
+            in.readRawData(reinterpret_cast<char *>(&b.dirX), sizeof(step));
+            in.readRawData(reinterpret_cast<char *>(&b.dirY), sizeof(step));
+            in.readRawData(reinterpret_cast<char *>(&b.radius), sizeof(step));
+            in.readRawData(reinterpret_cast<char *>(&b.v), sizeof(step));
+            in.readRawData(reinterpret_cast<char *>(&b.bX), sizeof(step));
+            in.readRawData(reinterpret_cast<char *>(&b.bY), sizeof(step));
+            in.readRawData(reinterpret_cast<char *>(&b.laX), sizeof(step));
+            in.readRawData(reinterpret_cast<char *>(&b.laY), sizeof(step));
             b.alive = true;
-            (*data[frameNum]).push_back(b);
-            bi++;
+            (*data.back()).push_back(b);
         }
         data.pop_back();
         frameNum = data.size();
-        if( frameNum == 0 )
+        if (frameNum == 0)
         {
             log("LogLoader: readed no frame");
             okay = false;
         }
         else
-            log("LogLoader: readed " + QString::number(frameNum) + " frames with " + QString::number(botNum) + " bots each.");
+            log("LogLoader: readed " + QString::number(frameNum) + " frames");
     }
     else
     {
-        botNum=0;
-        frameNum=0;
+        frameNum = 0;
         log("LogLoader: couldn't open");
     }
     file->close();
@@ -106,7 +83,7 @@ void LogLoader::read(QString path)
 
 void LogLoader::readObs(QString path)
 {
-    QFile file(path);//TODO: do this
+    QFile file(path); // TODO: do this
     bool tokay = file.open(QIODevice::ReadOnly | QIODevice::Text);
     if(tokay)
     {

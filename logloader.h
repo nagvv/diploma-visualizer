@@ -17,7 +17,7 @@ struct bot
     float   posX, posY, //position
             dirX, dirY, //direction
             radius, v,  //radius and best value
-            bX, bY,     //best val position
+            bX, bY,        //best val position
             laX, laY;   //looking at point
 };
 
@@ -27,7 +27,6 @@ class LogLoader: public QObject
 private:
     vector< shared_ptr< vector<bot> > > data;
     vector<QLineF> walls;
-    size_t botNum;
     size_t frameNum;
     std::unique_ptr<QFile> file;
     bool okay = false;
@@ -45,7 +44,6 @@ public:
 
     inline vector< shared_ptr< vector<bot> > > &getData() { return data; }
     inline const vector<QLineF> &getWalls() { return walls; }
-    inline size_t getBotNum() { return botNum; }
     inline size_t getFrameNum() { return frameNum; }
     inline bool isOkay() { return okay; }
 
