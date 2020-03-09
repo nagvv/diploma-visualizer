@@ -21,11 +21,14 @@ Painter::Painter(QWidget *parent) : QWidget(parent)
 
     maxSkip = 5;
     itSkip = 0;
+
+    maxValue = 1.0f;
 }
 
-void Painter::paint(shared_ptr<vector<bot>> bots)
+void Painter::paint(shared_ptr<vector<bot>> bots, grid _grid)
 {
     this->bots = bots;
+    this->current_grid = std::move(_grid);
     if(this->bots && recordTraces)
     {
         if(itSkip < maxSkip)
@@ -35,8 +38,12 @@ void Painter::paint(shared_ptr<vector<bot>> bots)
         }
         itSkip = 0;
         traces.emplace_back();
+        float _maxValue = 0;
         for(size_t i = 0; i < bots->size(); ++i)
         {
+            if ((*bots)[i].v > _maxValue)
+                _maxValue = (*bots)[i].v;
+
             QLineF ql;
             bool p1set = false;
             if( traces.size() > 1 )
@@ -49,13 +56,15 @@ void Painter::paint(shared_ptr<vector<bot>> bots)
 
             if(!p1set)
                 ql.setP1(ql.p2());
-            float redcv = (*bots)[i].v/150;
+            float redcv = (*bots)[i].v/maxValue;
             if(redcv > 1)
                 redcv = 1.;
             if(redcv < 0)//because noises
                 redcv = 0.;
             traces.back().push_back(make_pair(ql, QColor::fromRgbF(redcv, 1. - redcv, 0)));
         }
+        if (_maxValue > maxValue)
+            maxValue = _maxValue;
     }
 }
 
@@ -91,9 +100,10 @@ void Painter::resetTraces()
     traces.clear();
 }
 
-void Painter::makeGif(const vector<shared_ptr<vector<bot> > > &data)
+void Painter::makeGif(const vector<shared_ptr<vector<bot> > > &data, const vector< grid > & grid_data)
 {
     shared_ptr<vector<bot>> save = bots;//saving current frame
+    grid saved_grid = current_grid;
     resetTraces();
 
     QGifImage gif;
@@ -102,11 +112,13 @@ void Painter::makeGif(const vector<shared_ptr<vector<bot> > > &data)
     QImage image(this->width(), this->height(), QImage::Format_RGB32);
     for (unsigned int i = 0; i < data.size(); i+=2) //draw every second frame
     {
-        paint(data[i]);
+        paint(data[i], grid_data[i]);
         image.fill(QColor(Qt::white));
         QPainter painter(&image);
         float size = this->height() / viewHeight;
         float viewWidth = viewHeight * this->width() / this->height();
+
+        drawGrid(painter, viewWidth, size);
 
         if(showTraces)
             drawTraces(painter, viewWidth, size);
@@ -123,7 +135,7 @@ void Painter::makeGif(const vector<shared_ptr<vector<bot> > > &data)
     gif.save("outgif.gif");
 
     resetTraces();
-    paint(save);//returning to saved frame
+    paint(save, saved_grid);//returning to saved frame
 }
 
 void Painter::paintEvent(QPaintEvent *event)
@@ -135,6 +147,8 @@ void Painter::paintEvent(QPaintEvent *event)
 
     float size = this->height() / viewHeight;
     float viewWidth = viewHeight * this->width() / this->height();
+
+    drawGrid(painter, viewWidth, size);
 
     if(showTraces)
         drawTraces(painter, viewWidth, size);
@@ -170,7 +184,7 @@ void Painter::drawBots(QPainter &painter, float viewWidth, float size)
             float sz = 2*b.radius * size;
             if(colorRobots)
             {
-                float redcv = b.v/150;
+                float redcv = b.v/maxValue;
                 if(redcv > 1)
                     redcv = 1.;
                 if(redcv < 0)//because noises
@@ -234,4 +248,26 @@ void Painter::drawMark(QPainter &painter, float viewWidth, float size)
 
     painter.drawLine(l1);
     painter.drawLine(l2);
+}
+
+void Painter::drawGrid(QPainter &painter, float viewWidth, float size)
+{
+    painter.setPen(Qt::transparent);
+    for (size_t x = 0; x < current_grid.grid_size; ++x)
+        for (size_t y = 0; y < current_grid.grid_size; ++y) {
+            float val = current_grid.cells[y * current_grid.grid_size + x];
+            auto color = QColor::fromRgbF(1, 1, 0, val);
+            painter.setBrush(color);
+            float _w = float(current_grid.area_size)/current_grid.grid_size;
+            float _h = _w;
+            float _x = -current_grid.area_size/2 + x * _w;
+            float _y = -current_grid.area_size/2 + y * _h;
+
+            float px = (_x - viewX + viewWidth/2)*size;
+            float py = (_y - viewY + viewHeight/2)*size;
+            float pw = _w * size;
+            painter.drawRect(QRectF(px, py, pw, pw));
+    }
+    painter.setBrush(Qt::BrushStyle::NoBrush);
+    painter.setPen(Qt::black);
 }

@@ -18,6 +18,7 @@ class Painter : public QWidget
     Q_OBJECT
 private:
     shared_ptr<vector<bot>> bots;
+    grid current_grid;
     vector<QLineF> walls;
     vector<vector<pair<QLineF, QColor>>> traces;
     float viewHeight;
@@ -33,12 +34,14 @@ private:
 
     int maxSkip;
     int itSkip;
+
+    float maxValue;
 protected:
     void paintEvent(QPaintEvent *event);
 
 public:
     explicit Painter(QWidget *parent = nullptr);
-    void paint(shared_ptr<vector<bot>> bots);
+    void paint(shared_ptr<vector<bot>> bots, grid _grid);
 
     void setViewPos(float x, float y);//Set the view center to (x, y).
     void moveViewPos(float mx, float my);//Moves the view center by (mx, my).
@@ -60,13 +63,14 @@ public:
     void setWalls(const vector<QLineF>&);
     void resetTraces();
 
-    void makeGif(const vector< shared_ptr< vector<bot> > > &data);
+    void makeGif(const vector< shared_ptr< vector<bot> > > &data, const vector< grid > & grid_data);
 
 private:
     void drawTraces(QPainter &painter, float viewWidth, float size);
     void drawBots(QPainter &painter, float viewWidth, float size);
     void drawWalls(QPainter &painter, float viewWidth, float size);
     void drawMark(QPainter &painter, float viewWidth, float size);
+    void drawGrid(QPainter &painter, float viewWidth, float size);
 
 signals:
 

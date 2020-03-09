@@ -1,7 +1,20 @@
 #include <cstdint>
 #include "logloader.h"
 #include <QDataStream>
+#include <QFileInfo>
+#include <QDir>
 #include "common.h"
+
+namespace {
+    QString getGridPath(const QString &path)
+    {
+        QFileInfo info(path);
+        QString fname = info.fileName();
+        if (fname.left(3) != "log")
+            return QString();
+        return info.path() + QDir::separator() + "grid" + fname.mid(3);
+    }
+}
 
 LogLoader::LogLoader() : frameNum(0), bObsChanged(false)
 {
@@ -67,7 +80,10 @@ void LogLoader::read(QString path)
             okay = false;
         }
         else
+        {
             log("LogLoader: readed " + QString::number(frameNum) + " frames");
+            readGrid(getGridPath(path));
+        }
     }
     else
     {
@@ -123,6 +139,33 @@ void LogLoader::readObs(QString path)
     if(!obsWatcher.files().empty())
         obsWatcher.removePaths(obsWatcher.files());
     obsWatcher.addPath(path);
+}
+
+void LogLoader::readGrid(QString path)
+{
+    grid_file = std::unique_ptr<QFile>(new QFile(path));
+    log("LogLoader: opening " + path);
+    okay = grid_file->open(QIODevice::ReadOnly);
+    if(okay)
+    {
+        log("LogLoader: successfully opened");
+        QDataStream in(grid_file.get());
+        grid_data.clear();
+        while(!in.atEnd())
+        {
+            grid _grid;
+            in.readRawData(reinterpret_cast<char *>(&_grid.grid_size), sizeof(_grid.grid_size));
+            in.readRawData(reinterpret_cast<char *>(&_grid.area_size), sizeof(_grid.area_size));
+            _grid.cells.resize(_grid.grid_size * _grid.grid_size);
+            in.readRawData(reinterpret_cast<char *>(_grid.cells.data()), sizeof(float) * _grid.cells.size());
+            grid_data.push_back(std::move(_grid));
+        }
+        grid_data.resize(data.size());
+    }
+    else
+        log("LogLoader: couldn't open " + path);
+    grid_file->close();
+    grid_file.reset();
 }
 
 bool LogLoader::isObsFileChanged()

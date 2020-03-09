@@ -64,7 +64,7 @@ void Visualizer::vUpdate()
 
         if(!pause)
         {
-            ui->painter->paint(ll.getData()[frame]);
+            ui->painter->paint(ll.getData()[frame], ll.getGrid()[frame]);
             spcu+=updater->interval();
             if(spcu >= spto)
             {
@@ -332,7 +332,7 @@ void Visualizer::on_fillRobotsCheckBox_stateChanged(int set)
 void Visualizer::on_makeGifButton_clicked()
 {
     //make thread
-    ui->painter->makeGif(ll.getData());
+    ui->painter->makeGif(ll.getData(), ll.getGrid());
 }
 
 
